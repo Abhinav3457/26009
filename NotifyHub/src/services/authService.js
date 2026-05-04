@@ -3,43 +3,24 @@ const API_BASE_URL = 'http://20.207.122.201/evaluation-service';
 const CLIENT_ID = '9bab3658-71da-46b7-aef3-f1c10e5f4498';
 const CLIENT_SECRET = 'dksjyYNqDEsFjESS';
 
+// Hardcode the Bearer token you provided
+const BEARER_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJNYXBDbGFpbXMiOnsiYXVkIjoiaHR0cDovLzIwLjI0NC41Ni4xNDQvZXZhbHVhdGlvbi1zZXJ2aWNlIiwiZW1haWwiOiJhYmhpbmF2LjI2MDA5QGdnbmluZGlhLmRyb25hY2hhcnlhLmluZm8iLCJleHAiOjE3Nzc4NzMxMDksImlhdCI6MTc3Nzg3MjIwOSwiaXNzIjoiQWZmb3JkIE1lZGljYWwgVGVjaG5vbG9naWVzIFByaXZhdGUgTGltaXRlZCIsImp0aSI6IjBmYzBmNzdlLTg2NDAtNDYzNi04N2FiLWZhMjg1ZmEyZTNiYiIsImxvY2FsZSI6ImVuLUlOIiwibmFtZSI6ImFiaGluYXYgdGhha3VyIiwic3ViIjoiOWJhYjM2NTgtNzFkYS00NmI3LWFlZjMtZjFjMTBlNWY0NDk4In0sImVtYWlsIjoiYWJoaW5hdi4yNjAwOUBnZ25pbmRpYS5kcm9uYWNoYXJ5YS5pbmZvIiwibmFtZSI6ImFiaGluYXYgdGhha3VyIiwicm9sbE5vIjoiMjYwMDkiLCJhY2Nlc3NDb2RlIjoidWtzZFdUIiwiY2xpZW50SUQiOiI5YmFiMzY1OC03MWRhLTQ2YjctYWVmMy1mMWMxMGU1ZjQ0OTgiLCJjbGllbnRTZWNyZXQiOiJka3NqeVlOcURFc0ZqRVNTIn0.BVXEPeJYFmT4LiBbC7t4L9iJauQ8YnJ1Iew2wm56TZU';
+
 let authToken = null;
-let tokenExpiry = null;
 
 export async function getAuthToken() {
-  // Return cached token if still valid
-  if (authToken && tokenExpiry && new Date() < tokenExpiry) {
+  // Return cached token if already loaded
+  if (authToken) {
     return authToken;
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}/auth`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        clientId: CLIENT_ID,
-        clientSecret: CLIENT_SECRET,
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Auth failed: ${response.status}`);
-    }
-
-    const data = await response.json();
-    authToken = data.token_type 
-      ? `${data.token_type} ${data.access_token}` 
-      : data.access_token;
-    
-    // Token expires in 1 hour, refresh 5 minutes before
-    tokenExpiry = new Date(Date.now() + 55 * 60 * 1000);
-    
-    console.log('[AUTH] Successfully obtained authorization token');
+    // Use the provided Bearer token directly
+    authToken = `Bearer ${BEARER_TOKEN}`;
+    console.log('[AUTH] Loaded Bearer token successfully');
     return authToken;
   } catch (error) {
-    console.error('[AUTH] Failed to get authorization token:', error);
+    console.error('[AUTH] Failed to load authorization token:', error);
     throw error;
   }
 }
