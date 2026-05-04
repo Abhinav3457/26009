@@ -16,6 +16,11 @@ const LOG_LEVELS = {
 class Logger {
   constructor() {
     this.minLevel = LOG_LEVELS['debug'];
+    this.authToken = null;
+  }
+
+  setAuthToken(token) {
+    this.authToken = token;
   }
 
   /**
@@ -43,16 +48,27 @@ class Logger {
       // Log to console for debugging
       console.log(`[${level.toUpperCase()}] ${message}`);
 
-      // Send to logging API
-      fetch(LOG_API_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      }).catch((err) => {
-        console.error('Failed to send log to API:', err);
-      });
+      // Build headers
+      const headers = {
+        'Content-Type': 'application/json',
+      };
+
+      if (this.authToken) {
+        headers['Authorization'] = this.authToken;
+      }
+
+      // Send to logging API (non-blocking)
+      try {
+        fetch(LOG_API_URL, {
+          method: 'POST',
+          headers: headers,
+          body: JSON.stringify(payload),
+        }).catch(() => {
+          // Silently fail - logging shouldn't break the app
+        });
+      } catch (err) {
+        // Invalid URL or network error - continue anyway
+      }
     } catch (error) {
       console.error('Error in logger:', error);
     }

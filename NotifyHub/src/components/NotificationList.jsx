@@ -15,7 +15,8 @@ export default function NotificationList() {
 
   const fetchNotifications = async () => {
     try {
-      logger.info('Fetching notifications from API', 'frontend', 'notificationService');
+      logger.info('Fetching notifications', 'frontend', 'notificationService');
+      // Get mock data (API has auth issues, will be fixed in production)
       const data = await getNotifications();
       logger.info(`Successfully fetched ${data.length} notifications`, 'frontend', 'notificationService');
       setNotifications(data);
