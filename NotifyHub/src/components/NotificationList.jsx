@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import NotificationItem from './NotificationItem';
 import { getNotifications } from '../services/notificationService';
+import { getAuthToken } from '../services/authService';
 import { filterByPriority } from '../services/priorityFilter';
 import { logger } from '../logging_middleware/logger';
 
@@ -10,13 +11,27 @@ export default function NotificationList() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchNotifications();
+    initializeAndFetch();
   }, []);
+
+  const initializeAndFetch = async () => {
+    try {
+      // Initialize auth token first
+      logger.info('Initializing authentication', 'frontend', 'authService');
+      await getAuthToken();
+      logger.info('Authentication successful', 'frontend', 'authService');
+      
+      // Then fetch notifications
+      await fetchNotifications();
+    } catch (error) {
+      logger.warn(`Auth initialization failed: ${error.message}. Fetching with fallback.`, 'frontend', 'authService');
+      await fetchNotifications();
+    }
+  };
 
   const fetchNotifications = async () => {
     try {
       logger.info('Fetching notifications', 'frontend', 'notificationService');
-      // Get mock data (API has auth issues, will be fixed in production)
       const data = await getNotifications();
       logger.info(`Successfully fetched ${data.length} notifications`, 'frontend', 'notificationService');
       setNotifications(data);

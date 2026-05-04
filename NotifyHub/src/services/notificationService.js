@@ -91,10 +91,14 @@ export async function getNotifications() {
   try {
     logger.info('Fetching notifications from API', 'frontend', 'notificationService');
     
+    // Get authentication token
+    const token = await getAuthToken();
+    
     const response = await fetch(`${API_BASE_URL}/notifications`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': token,
       },
     });
     
