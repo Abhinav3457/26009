@@ -1,27 +1,41 @@
-# Notification System Design
+# Stage 1 - Notification System Design
 
 ## Overview
-This document outlines the design of the notification system for the application.
+This document describes how the Priority Inbox identifies the top N unread notifications using live data from the notification API. The priority order is Placement > Result > Event, with recency (latest timestamp) used as a tiebreaker within the same priority.
 
-## Components
+## Approach
+- Fetch all notifications from the live API.
+- Convert API fields to a normalized format.
+- Filter to unread items only.
+- Sort by priority first, then by timestamp (newest first).
+- Return the top N items.
 
-### Backend (notification_app_be)
-- API endpoints for notification management
-- Database schema for storing notifications
-- Business logic for notification processing
+## Priority Rules
+1. Placement notifications have the highest priority.
+2. Result notifications are second.
+3. Event notifications are third.
+4. If two notifications share the same priority, the newest timestamp wins.
 
-### Frontend (notification_app_fe)
-- UI components for displaying notifications
-- State management for notification data
-- User interactions and preferences
+## Pseudocode
+```
+function getTopNotifications(notifications, topN):
+	if notifications is not a list:
+		return []
 
-### Logging Middleware (logging_middleware)
-- Request/response logging
-- Error tracking
-- Performance monitoring
+	unread = filter notifications where isRead == false
 
-## Architecture
-[Add your architecture details here]
+	priorityOrder = {
+		"placement": 0,
+		"result": 1,
+		"event": 2
+	}
 
-## Features
-[Add feature specifications here]
+	sort unread by:
+		(priorityOrder[type], timestamp desc)
+
+	return first topN items from unread
+```
+
+## Notes
+- The algorithm is efficient enough for typical list sizes and can be optimized with a heap if needed.
+- Logging middleware records each major step (fetch, filter, sort) for traceability.

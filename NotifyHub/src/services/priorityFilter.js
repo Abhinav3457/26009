@@ -2,7 +2,7 @@ import { logger } from '../logging_middleware/logger';
 
 /**
  * Filters and sorts notifications by priority
- * Priority Order: result > event > recency
+ * Priority Order: placement > result > event (recency as tiebreaker)
  * Only includes unread notifications
  * 
  * @param {Array} notifications - List of all notifications
@@ -22,8 +22,8 @@ export function filterByPriority(notifications, topN = 10) {
     const unreadNotifications = notifications.filter(n => !n.isRead);
     logger.debug(`Filtered to ${unreadNotifications.length} unread notifications`, 'frontend', 'priorityFilter');
 
-    // Sort by priority: result > event > placement > recency (newest first)
-    const priorityOrder = { 'result': 0, 'event': 1, 'placement': 1, 'recency': 2 };
+    // Sort by priority: placement > result > event (newest first within same priority)
+    const priorityOrder = { 'placement': 0, 'result': 1, 'event': 2 };
     
     const sorted = unreadNotifications.sort((a, b) => {
       const priorityA = priorityOrder[a.type] ?? 999;

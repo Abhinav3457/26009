@@ -6,10 +6,9 @@ export default function NotificationItem({ notification, onMarkAsRead }) {
       case 'result':
         return '#d32f2f';
       case 'event':
-      case 'placement':
         return '#1976d2';
-      case 'recency':
-        return '#388e3c';
+      case 'placement':
+        return '#f57c00';
       default:
         return '#757575';
     }

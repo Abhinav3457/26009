@@ -1,4 +1,5 @@
-const LOG_API_URL = 'http://20.207.122.201/evaluation-service/logs';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://20.207.122.201/evaluation-service';
+const LOG_API_URL = `${API_BASE_URL}/logs`;
 
 /**
  * Logger utility for frontend application

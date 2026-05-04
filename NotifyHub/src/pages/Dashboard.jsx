@@ -13,12 +13,13 @@ export default function Dashboard() {
   
   // Query parameters
   const limit = parseInt(searchParams.get('limit')) || 20;
+  const page = parseInt(searchParams.get('page')) || 1;
   const typeFilter = searchParams.get('type') || 'all';
   const viewFilter = searchParams.get('view') || 'all'; // all, new, viewed
 
   useEffect(() => {
     fetchAllNotifications();
-  }, []);
+  }, [limit, page, typeFilter]);
 
   useEffect(() => {
     filterAndDisplay();
@@ -27,7 +28,7 @@ export default function Dashboard() {
   const fetchAllNotifications = async () => {
     try {
       logger.info('Fetching all notifications for dashboard', 'frontend', 'dashboard');
-      const data = await getNotifications();
+      const data = await getNotifications({ limit, page, type: typeFilter });
       logger.info(`Fetched ${data.length} notifications`, 'frontend', 'dashboard');
       setAllNotifications(data);
       setLoading(false);
@@ -118,7 +119,6 @@ export default function Dashboard() {
             <option value="result">Result</option>
             <option value="event">Event</option>
             <option value="placement">Placement</option>
-            <option value="recency">Recency</option>
           </select>
         </div>
 

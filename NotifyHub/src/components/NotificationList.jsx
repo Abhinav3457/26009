@@ -18,7 +18,8 @@ export default function NotificationList() {
     try {
       // Initialize auth token first
       logger.info('Initializing authentication', 'frontend', 'authService');
-      await getAuthToken();
+      const token = await getAuthToken();
+      logger.setAuthToken(token);
       logger.info('Authentication successful', 'frontend', 'authService');
       
       // Then fetch notifications

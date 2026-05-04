@@ -11,5 +11,12 @@ export default defineConfig({
   server: {
     port: 3000,
     open: true,
+    proxy: {
+      '/evaluation-service': {
+        target: 'http://20.207.122.201',
+        changeOrigin: true,
+        secure: false,
+      },
+    },
   }
 })

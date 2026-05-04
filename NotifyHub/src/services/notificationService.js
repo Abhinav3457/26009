@@ -1,7 +1,7 @@
 import { logger } from '../logging_middleware/logger';
 import { getAuthToken } from './authService';
 
-const API_BASE_URL = 'http://20.207.122.201/evaluation-service';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://20.207.122.201/evaluation-service';
 
 // Mock data for development/testing
 const MOCK_NOTIFICATIONS = [
@@ -23,9 +23,9 @@ const MOCK_NOTIFICATIONS = [
   },
   {
     id: '3',
-    type: 'recency',
-    title: 'Library Extended Hours',
-    message: 'Library will remain open until 10 PM during exam season',
+    type: 'placement',
+    title: 'Advanced Micro Devices Inc. Hiring',
+    message: 'Placement drive registration is now open',
     timestamp: new Date(Date.now() - 1000 * 60 * 60).toISOString(),
     isRead: false,
   },
@@ -47,9 +47,9 @@ const MOCK_NOTIFICATIONS = [
   },
   {
     id: '6',
-    type: 'recency',
-    title: 'Wi-Fi Maintenance Notice',
-    message: 'Wi-Fi will be down on Saturday for scheduled maintenance',
+    type: 'placement',
+    title: 'Campus Placement Workshop',
+    message: 'Resume and interview preparation workshop this Friday',
     timestamp: new Date(Date.now() - 1000 * 60 * 240).toISOString(),
     isRead: false,
   },
@@ -71,9 +71,9 @@ const MOCK_NOTIFICATIONS = [
   },
   {
     id: '9',
-    type: 'recency',
-    title: 'Hostel Allocation Results',
-    message: 'Check your hostel allocation status on the portal',
+    type: 'placement',
+    title: 'Placement Eligibility List',
+    message: 'Check eligibility list for upcoming placement drives',
     timestamp: new Date(Date.now() - 1000 * 60 * 420).toISOString(),
     isRead: false,
   },
@@ -87,14 +87,30 @@ const MOCK_NOTIFICATIONS = [
   },
 ];
 
-export async function getNotifications() {
+export async function getNotifications({ limit, page, type } = {}) {
   try {
     logger.info('Fetching notifications from API', 'frontend', 'notificationService');
     
     // Get authentication token
     const token = await getAuthToken();
     
-    const response = await fetch(`${API_BASE_URL}/notifications`, {
+    const queryParams = new URLSearchParams();
+    if (limit) {
+      queryParams.set('limit', limit);
+    }
+    if (page) {
+      queryParams.set('page', page);
+    }
+    if (type && type !== 'all') {
+      queryParams.set('type', type);
+    }
+
+    const queryString = queryParams.toString();
+    const requestUrl = queryString
+      ? `${API_BASE_URL}/notifications?${queryString}`
+      : `${API_BASE_URL}/notifications`;
+
+    const response = await fetch(requestUrl, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -112,14 +128,19 @@ export async function getNotifications() {
     const notifications = apiResponse.notifications || apiResponse;
     
     // Map API response to our format and mark all as unread
-    const mappedNotifications = notifications.map(notif => ({
-      id: notif.id,
-      type: notif.type || 'recency',
-      title: notif.title || notif.message,
-      message: notif.message || '',
-      timestamp: notif.timestamp,
-      isRead: false,
-    }));
+    const mappedNotifications = notifications.map(notif => {
+      const rawType = notif.type || notif.Type || 'event';
+      const normalizedType = String(rawType).toLowerCase();
+
+      return {
+        id: notif.id || notif.ID || notif.Id,
+        type: normalizedType,
+        title: notif.title || notif.Title || notif.message || notif.Message || 'Notification',
+        message: notif.message || notif.Message || '',
+        timestamp: notif.timestamp || notif.Timestamp || new Date().toISOString(),
+        isRead: false,
+      };
+    });
     
     logger.info(`Successfully fetched ${mappedNotifications.length} notifications from API`, 'frontend', 'notificationService');
     return mappedNotifications;
