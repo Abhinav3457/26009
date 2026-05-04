@@ -1,11 +1,12 @@
 import React from 'react';
 
-export default function NotificationItem({ notification }) {
+export default function NotificationItem({ notification, onMarkAsRead }) {
   const getPriorityColor = (type) => {
     switch (type) {
       case 'result':
         return '#d32f2f';
       case 'event':
+      case 'placement':
         return '#1976d2';
       case 'recency':
         return '#388e3c';
@@ -20,15 +21,21 @@ export default function NotificationItem({ notification }) {
   };
 
   return (
-    <div className="notification-item" style={{ borderLeft: `4px solid ${getPriorityColor(notification.type)}` }}>
+    <div className={`notification-item ${notification.isRead ? 'read' : 'unread'}`} style={{ borderLeft: `4px solid ${getPriorityColor(notification.type)}` }}>
       <div className="notification-header">
         <span className="notification-type" style={{ backgroundColor: getPriorityColor(notification.type) }}>
           {notification.type.toUpperCase()}
         </span>
         <span className="notification-timestamp">{formatDate(notification.timestamp)}</span>
+        {!notification.isRead && <span className="new-badge">NEW</span>}
       </div>
       <h3 className="notification-title">{notification.title}</h3>
       <p className="notification-message">{notification.message}</p>
+      {onMarkAsRead && !notification.isRead && (
+        <button className="mark-read-btn" onClick={() => onMarkAsRead(notification.id)}>
+          Mark as Read
+        </button>
+      )}
     </div>
   );
 }
