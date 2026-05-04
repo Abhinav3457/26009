@@ -89,12 +89,38 @@ const MOCK_NOTIFICATIONS = [
 
 export async function getNotifications() {
   try {
-    logger.info('Fetching notifications', 'frontend', 'notificationService');
-    // Using mock data for Stage 1 (real API auth can be configured later)
-    logger.info(`Loaded ${MOCK_NOTIFICATIONS.length} notifications`, 'frontend', 'notificationService');
-    return MOCK_NOTIFICATIONS;
+    logger.info('Fetching notifications from API', 'frontend', 'notificationService');
+    
+    const response = await fetch(`${API_BASE_URL}/notifications`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    
+    if (!response.ok) {
+      logger.warn(`API returned ${response.status}, using fallback mock data`, 'frontend', 'notificationService');
+      return MOCK_NOTIFICATIONS;
+    }
+    
+    const apiResponse = await response.json();
+    // API returns {notifications: [...]}, extract the array
+    const notifications = apiResponse.notifications || apiResponse;
+    
+    // Map API response to our format and mark all as unread
+    const mappedNotifications = notifications.map(notif => ({
+      id: notif.id,
+      type: notif.type || 'recency',
+      title: notif.title || notif.message,
+      message: notif.message || '',
+      timestamp: notif.timestamp,
+      isRead: false,
+    }));
+    
+    logger.info(`Successfully fetched ${mappedNotifications.length} notifications from API`, 'frontend', 'notificationService');
+    return mappedNotifications;
   } catch (error) {
-    logger.error(`Error fetching notifications: ${error.message}`, 'frontend', 'notificationService');
+    logger.error(`Error fetching notifications: ${error.message}. Using fallback mock data.`, 'frontend', 'notificationService');
     return MOCK_NOTIFICATIONS;
   }
 }

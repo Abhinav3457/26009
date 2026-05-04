@@ -22,8 +22,8 @@ export function filterByPriority(notifications, topN = 10) {
     const unreadNotifications = notifications.filter(n => !n.isRead);
     logger.debug(`Filtered to ${unreadNotifications.length} unread notifications`, 'frontend', 'priorityFilter');
 
-    // Sort by priority: result > event > recency (newest first)
-    const priorityOrder = { 'result': 0, 'event': 1, 'recency': 2 };
+    // Sort by priority: result > event > placement > recency (newest first)
+    const priorityOrder = { 'result': 0, 'event': 1, 'placement': 1, 'recency': 2 };
     
     const sorted = unreadNotifications.sort((a, b) => {
       const priorityA = priorityOrder[a.type] ?? 999;
